@@ -241,4 +241,100 @@ public class Graph {
 
         return maxColor + 1;
     }
+
+    // Algorytm Kurkala
+    private Node findNode(int id, ArrayList<Node> list) {
+        for (Node node : list) {
+            if (node.id == id) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    private Node findParent(Node node, HashMap<Long, Node> parent) {
+        if (parent.get(node.id) != node) {
+            parent.put(Long.valueOf((node.id)), findParent(parent.get(node.id), parent));
+        }
+        return parent.get(node.id);
+    }
+
+    private void union(Node node1, Node node2, HashMap<Long, Node> parent, HashMap<Long, Integer> rank) {
+        Node root1 = findParent(node1, parent);
+        Node root2 = findParent(node2, parent);
+
+        if (root1 != root2) {
+            if (rank.get(root1.id) < rank.get(root2.id)) {
+                parent.put(Long.valueOf(root1.id), root2);
+            } else if (rank.get(root1.id) > rank.get(root2.id)) {
+                parent.put(Long.valueOf(root2.id), root1);
+            } else {
+                parent.put(Long.valueOf(root2.id), root1);
+                rank.put(Long.valueOf(root1.id), rank.get(root1.id) + 1);
+            }
+        }
+    }
+
+    public ArrayList<Edge> kruskalMST() {
+        ArrayList<Edge> mst = new ArrayList<>();
+
+        edges.sort(Comparator.comparingInt(edge -> edge.weight));
+
+        HashMap<Long, Node> parent = new HashMap<>();
+        HashMap<Long, Integer> rank = new HashMap<>();
+
+        for (Node node : nodes) {
+            parent.put(Long.valueOf(node.id), node);
+            rank.put(Long.valueOf(node.id), 0);
+        }
+
+        for (Edge edge : edges) {
+            Node root1 = findParent(edge.v1, parent);
+            Node root2 = findParent(edge.v2, parent);
+
+            if (root1 != root2) {
+                mst.add(edge);
+                union(edge.v1, edge.v2, parent, rank);
+            }
+        }
+
+        return mst;
+    }
+
+    // Algorytm Prima
+    public ArrayList<Edge> primMST() {
+        ArrayList<Edge> mst = new ArrayList<>();
+        if (nodes.isEmpty()) return mst;
+
+        HashMap<Node, Boolean> inMST = new HashMap<>();
+        for (Node node : nodes) {
+            inMST.put(node, false);
+        }
+
+        PriorityQueue<Edge> edgeQueue = new PriorityQueue<>(Comparator.comparingInt(edge -> edge.weight));
+        Node startNode = nodes.getFirst();
+
+        addEdgesToQueue(startNode, edgeQueue, inMST);
+
+        while (!edgeQueue.isEmpty()) {
+            Edge minEdge = edgeQueue.poll();
+            if (!inMST.get(minEdge.v2)) {
+                mst.add(minEdge);
+                addEdgesToQueue(minEdge.v2, edgeQueue, inMST);
+            }
+        }
+
+        return mst;
+    }
+
+    private void addEdgesToQueue(Node node, PriorityQueue<Edge> edgeQueue, HashMap<Node, Boolean> inMST) {
+        inMST.put(node, true);
+        for (Edge edge : edges) {
+            if (edge.v1 == node && !inMST.get(edge.v2)) {
+                edgeQueue.add(edge);
+            } else if (edge.v2 == node && !inMST.get(edge.v1)) {
+                edgeQueue.add(new Edge(edge.v2, edge.v1, edge.weight));
+            }
+        }
+    }
 }
