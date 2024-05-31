@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.*;
+
 
 public class Graph {
     private List<Node> nodes = new ArrayList<Node>();
@@ -100,10 +102,10 @@ public class Graph {
                 if (v1!=v2){
                     if (getEdge(id1, id2) == null && getEdge(id2, id1) == null){
                         edges.add(new Edge(v1, v2, weight));
-                        System.out.println("[Graph] Added edge with weight " + weight + ", and node ids " + id1 + " and " + id2);
+                        System.out.println("[Graph] Added edge with weight " + weight + ", and node id1: " + id1 + " and id2: " + id2);
                     }
                     else{
-                        System.out.println("[Graph] There already is an edge with ids " + id1 + " and " + id2);
+                        System.out.println("[Graph] There already is an edge with id1: " + id1 + " and id2: " + id2);
                     }
                 }
                 else{
@@ -122,12 +124,12 @@ public class Graph {
     public void removeEdge(int id1, int id2){
         if (getEdge(id1, id2) != null){
             edges.remove(getEdge(id1, id2));
-            System.out.println("[Graph] Removed edge with ids " + id1 + " and " + id2);
+            System.out.println("[Graph] Removed edge with id1: " + id1 + " and id2:" + id2);
         } else if (getEdge(id2,id1) != null) {
             edges.remove(getEdge(id2, id1));
-            System.out.println("[Graph] Removed edge with ids " + id2 + " and " + id1);
+            System.out.println("[Graph] Removed edge with id1: " + id2 + " and id2: " + id1);
         } else{
-            System.out.println("[Graph] There is no edge with ids " + id1 + " and " + id2);
+            System.out.println("[Graph] There is no edge with id1: " + id1 + " and id2" + id2);
         }
     }
 
@@ -140,16 +142,16 @@ public class Graph {
             if (edgesToRemove != null){
                 int i;
                 for (i = 0; i < edgesToRemove.size(); i++){
-                    System.out.println("[Graph] Removed edge with weight " + edgesToRemove.get(i).weight + " and ids " + edgesToRemove.get(i).v1.id + " and " + edgesToRemove.get(i).v2.id);
+                    System.out.println("[Graph] Removed edge (weight: " + edgesToRemove.get(i).weight + "; id1: " + edgesToRemove.get(i).v1.id + "; id2: " + edgesToRemove.get(i).v2.id);
                     edges.remove(edgesToRemove.get(i));
                 }
             }
 
             nodes.remove(node);
-            System.out.println("[Graph] Removed node with id " + id);
+            System.out.println("[Graph] Node with id " + id + " has been removed");
         }
         else{
-            System.out.println("[Graph] There is no node with id " + id);
+            System.out.println("[Graph] Node with id " + id + " does not exist");
         }
     }
 
@@ -196,5 +198,47 @@ public class Graph {
         }
 
         return null;
+    }
+    public int minimalChromaticNumber() {
+        if (nodes.isEmpty()) return 0;
+
+        HashMap<Node, Integer> colorMap = new HashMap<>();
+        colorMap.put(nodes.getFirst(), 0);
+
+        for (int i = 1; i < nodes.size(); i++) {
+            Node node = nodes.get(i);
+            Set<Integer> usedColors = new HashSet<>();
+            for (Edge edge : edges) {
+                if (edge.v1 == node) {
+                    Node neighbor = edge.v2;
+                    if (colorMap.containsKey(neighbor)) {
+                        usedColors.add(colorMap.get(neighbor));
+                    }
+                } else if (edge.v2 == node) {
+                    Node neighbor = edge.v1;
+                    if (colorMap.containsKey(neighbor)) {
+                        usedColors.add(colorMap.get(neighbor));
+                    }
+                }
+            }
+
+            int cr;
+            for (cr = 0; cr < nodes.size(); cr++) {
+                if (!usedColors.contains(cr)) {
+                    break;
+                }
+            }
+
+            colorMap.put(node, cr);
+        }
+
+        int maxColor = 0;
+        for (int color : colorMap.values()) {
+            if (color > maxColor) {
+                maxColor = color;
+            }
+        }
+
+        return maxColor + 1;
     }
 }
